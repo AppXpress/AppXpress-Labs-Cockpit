@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title>Cockpit - Product of AppXpress Labs</title>
+
+    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+
+    <!-- ionic/angularjs js -->
+    <script src="lib/ionic/js/ionic.bundle.js"></script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB16sGmIekuGIvYOfNoW9T44377IU2d2Es&sensor=true"></script>
+	<script src="lib/google/markerwithlabel.js"></script>
+	<script type="text/javascript" src="./lib/chartjs/Chart.js"></script>
+	<script type="text/javascript" src="./lib/tc-angular-chartjs-1.0.3/tc-angular-chartjs.min.js"></script>
+
+    <!-- cordova script (this will be a 404 during development) -->
+    <script src="cordova.js"></script>
+    
+     <!-- common js functions -->
+     <script src="js/common.js"></script>
+     <script src="js/config.js"></script>
+
+
+   
+     
+     <!-- your services js -->
+    <script src="js/services/loginservice.js"></script>
+    <script src="js/services/partyservice.js"></script>
+    <script src="js/services/mapservice.js"></script>
+    <script src="js/services/weatherservice.js"></script>
+    <script src="js/services/qcuserservice.js"></script>
+    <!-- your controllers js -->
+    <script src="js/controllers.js"></script>
+    <script src="js/directives.js"></script>
+    
+    <!-- your app's js -->
+    <script src="js/app.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="lib/google/angular-google-maps.js"></script>
+    <script type='text/javascript' src='script.js'></script><!--script-->
+    <!--css-->
+    <style type="text/css">
+        html, body, #map_canvas {
+            height: 1000px;
+            width: 100%;
+            margin: 0px;
+			background-color:#1c334b!important;
+        }
+
+        #map_canvas {
+            position: relative;
+			background-color:#1c334b!important;
+        }
+
+        .angular-google-map-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+			background-color:#1c334b!important;
+        }
+    </style>
+    
+  </head>
+
+  <body ng-app="cockpit" ng-controller="MapCtrl" style="background-color:#1c334b!important;overflow:hidden;">
+  <ion-view>
+  <ion-content scroll="false">
+
+		 		
+	<div id="map_canvas" data-tap-disabled="true" class="{{mapClass}}" style="background-color:#1c334b!important;">
+	    <ui-gmap-google-map center="map.center" zoom="map.zoom" pan="true" draggable="true" options="options" data-tap-disabled="true" style="background-color:#1c334b!important;">
+	        <div ng-repeat="(uid,com) in comMarkers | filter:(!com.filterValue === true) ">
+	        <ui-gmap-marker idkey="com.memberId" icon="com.icon"  coords="com.coords" options="com.options" click="markerClicker(uid, com, false)" events="marker.events">
+	        </ui-gmap-marker>
+	        </div>
+	    </ui-gmap-google-map>
+    </div>
+		
+		
+		
+		<!-- LOGIN -->
+		
+		<div id="login_backdrop" class="{{signinClass}}"></div>
+		
+
+		<div id="login" class="{{signinClass}}">
+			<div class="row">
+				<div class="col">
+					<img src="./img/GTNexusLogo.png" style="width:150px;"/>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 style="color:#fff;-webkit-font-smoothing: antialiased !important;font-weight:300;">Welcome to Cockpit &#x2122;</h2>
+				</div>
+			</div>
+				<div class="row">
+				<div class="col">
+					<input type="text" name="username" placeholder="Username" style="width:350px;padding-left:10px;" class="inputBorder" ng-model="userName" ng-change="animateLabs()">
+				</div>
+				</div>
+			    <div class="row">
+				<div class="col">
+					<input type="password" name="password" placeholder="Password" style="width:350px;padding-left:10px;" ng-model="password" class="inputBorder">
+				</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<button class="button button-icon icon ion-chevron-right login-button" style="float:right;" ng-click="login(userName,password)"></button>
+					</div>
+				</div>
+				<div ng-show="loginError"><h6 class="errorBG">{{errorMessage}}</h6></div>
+				<div class="row">
+					<div class="col">
+						<h2 style="color:#fff;" id="erlenmeyer-icon" class="rotateIcon"><i class="ion-erlenmeyer-flask"></i></h2>
+						<h6 style="color:#fff;font-weight:300;">Product of AppXpress Labs</h6>
+					</div>
+				</div>
+			
+		</div>
+		<!----------->
+		
+		<div id="start-button" ng-click="showSearch()" ng-show="startValue">
+			<div id="start-icon" ng-show="startValue"><i class="ion-navicon-round" style="z-index:8;"></i></div>
+		</div>
+		<div id="switch-user" ng-click="showAccount()"><i class="ion-person"></i></div>
+		<div id="userSettings" ng-show="userAccount" ng-click="showAccount()">
+		<div class="row">
+			<div class="col-75">
+				<span style="float:right;"><h6>{{::userName}}</h6></span>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				 <button class="button button-small button-assertive" style="float:right;" ng-click="signOut()">Sign-out</button> <i class="ion-ios-gear" style="float:left;font-size:24px;color:#4a87ee;padding-top:3px;" ng-click="showSettings()"></i>
+			</div>
+			 
+		</div>
+		</div>
+		<div id="user-org-menu" class="row" ng-modal="startInput">
+			<span class="cockpitToolTip" ng-show='showTooltip'>
+				Tap on the arrow to switch between filters
+				 <br>
+				 <br>
+				 <p style="float:right;"> <button class="button button-light button-small" ng-click="hideGotIt()"><b>Okay !</b></button> </p>
+			</span>
+			<div class="col-10"></div>
+			<div class="col" id="orgSearch" ng-show="showOrgSearch"><input class="searchOrg" placeholder="Search for organization" ng-change="searchOrganization()"  ng-model="searchVal" ng-value="searchVal" ng-focus="searchOrganization()" ng-blur="focusOutTextBox('searchReulst')" style="width:360px;"/></div>
+			<div class="col" ng-show="showFactorySearch"><span id="selectedOrgStyles" on-swipe-left="switchBackToOrgSearch()"><span class="orgText">{{selectedOrg}}&nbsp;</span><i class="ion-ios-close" ng-click="switchBackToOrgSearch()"></i></span>
+				
+				<span class="subDetails"  ng-click="toggleFilter()">
+				<i class="{{toggleDisplay}}" class="subDetailIconStyle"></i>
+				</span>
+				
+				
+			<input style="border:0px solid #000;width:240px;" class="searchOrg" placeholder="{{placeholderMarker}}" ng-change="mapMarkers()"  ng-model="searchFactory" ng-value="searchFactory" ng-focus="mapMarkers()" ng-blur="focusOutTextBox('searchMarker')" id="textFactory"/>
+			</div>
+		</div>
+		<div id="user-filter-menu" ng-show="filterMenu">
+			<div class="row" style="border-bottom:1px solid #bbb;padding-bottom:5px;">
+								<div class="col-25">
+					<li class="item item-checkbox">
+						<label class="checkbox chk-buyer">
+							<input type="checkbox" ng-model="buyerRole" ng-change="filterChanged(filterValueConst.buyer.value,buyerRole)"/>
+						</label>
+						Buyer
+					</li>
+				</div>
+				<div class="col-25">
+					<li class="item item-checkbox">
+						<label class="checkbox chk-seller">
+							<input type="checkbox" ng-model="sellerRole"  ng-change="filterChanged(filterValueConst.seller.value,sellerRole)" />
+						</label>
+						Seller
+					</li>
+				</div>
+				<div class="col-25">
+					<li class="item item-checkbox">
+						<label class="checkbox chk-factory">
+							<input type="checkbox" ng-model="factoryRole"  ng-change="filterChanged(filterValueConst.factory.value,factoryRole)" />
+						</label>
+						Factory
+					</li>
+				</div>
+				<div class="col-25">
+					<li class="item item-checkbox">
+						<label class="checkbox chk-other">
+							<input type="checkbox" ng-model="otherRole"  ng-change="filterChanged(filterValueConst.other.value,otherRole)" />
+						</label>
+						Other
+					</li>
+				</div>
+			</div>  
+			
+			<div class="row rowSpacer" style="padding-top:4px;">
+				<div class="col-40">
+					<li class="item item-checkbox">
+						<label class="checkbox chk-orders">
+							<input type="checkbox" ng-model="orderRole" ng-change="filterChanged(filterValueConst.order.value,orderRole)" ng-disabled="false"/>
+						</label>
+						Show order proportions
+					</li>
+				</div>
+				<div class="col-60" ng-show="OrgClicked">
+					<li class="item item-checkbox">
+						<a href="unresolved_address_pdf/{{pdfDownloadURl}}" target="_blank">Download</a> unresolved addresses.
+					</li>
+				</div>
+			</div>
+			
+					</div>
+		
+		
+		<ion-list class="listResults" class="card list" ng-show="searchResults" style="width: 478px; height: 400px;overflow-y:scroll;" ng-hide="true">
+			<ion-item class="item item-text-wrap" ng-repeat="(key,value) in organizations | filter:searchVal" id="{{key}}" ng-click="loadOrgInfo(value.orgId,value.name)"><p>{{value.name}}</p></ion-item>
+		</ion-list>
+		
+		<ion-list class="listResults" class="card list" ng-show="searchMarkerResults" style="width: 478px; height: 400px;overflow-y:scroll;" ng-hide="true">
+				<ion-item class="item item-text-wrap" ng-repeat="(key,value) in comMarkers | filter:searchFactory | filter:(!value.filterValue === true)  " id="{{key}}" ng-click="pulsateMarker(key, value)"><p>{{value.name}}</p></ion-item>
+		</ion-list>
+
+		<ion-list class="listResults" class="card list" ng-show="searchItelliReusults" style="width: 478px; height: 200px;overflow-y:scroll;" ng-hide="true">
+			<ion-item class="item item-text-wrap" ng-click="naturalLanguageFilter('has Quality Audit Report',0)"><p><span class="filter-id">has</span> Quality Audit Report Data</p></ion-item>
+			<ion-item class="item item-text-wrap" ng-click="naturalLanguageFilter('has Active Orders',1)"><p><span class="filter-id">has</span> Active Orders</p></ion-item>
+			<ion-item class="item item-text-wrap" ng-click="naturalLanguageFilter('has Environmental Sustainability Reports',2)"><p><span class="filter-id">has</span> Environmental Sustainability Reports</p></ion-item>
+			<ion-item class="item item-text-wrap" ng-click="naturalLanguageFilter('is Seller and Factory',3)"><p><span class="filter-id">is</span> Seller <span class="filter-id">and</span> Factory</p></ion-item>
+		</ion-list>
+ 
+		
+		<div id="gtnexus" ng-show="startValue"></div>
+		
+ 
+		
+		<div class="sidepanel" id="sidePlanelDefault">
+
+
+			<div style="width:100%;">
+				<div class="row">
+					<div class="col-25 button-panel" style="background-color:#982b2a!important;" ng-click="hideDetailSection()">
+						<i class="ion-chevron-right"></i>
+					</div>
+					<div class="col-25 button-panel" ng-click="zoomToMarker(10)">
+						<i class="ion-ios-search-strong"></i>
+					</div>
+					<div class="col-25 button-panel" ng-click="zoomOutOfMarker(1)">
+						<i class="ion-android-map" ></i>
+					</div>
+					<div class="col-25 button-panel">
+
+					</div>
+				</div>
+			</div>
+			<div id="custom-content-menu">
+				<!--<div id="minimize" >
+					<span class="icon ion-arrow-right-b"></span>
+				</div>-->
+
+				<div class="list">
+					<i class="ion-ios-location-outline" style="font-size:25px;"><span
+							style="font-size:14px;vertical-align:middle;padding-left:10px;font-weight:400;"> {{clickedOrg.name}}</span></i><!--[{{clickedOrg.memberId}}] -->
+					<br/>
+
+					<div style="padding-left:10px;">
+						<div ng-if="clickedOrg.address.addressLine1 !== undefined && clickedOrg.address.addressLine1 !== ''">
+							{{clickedOrg.address.addressLine1}}
+						</div>
+						<div ng-if="clickedOrg.address.addressLine2 !== undefined && clickedOrg.address.addressLine2 !== ''">
+							{{clickedOrg.address.addressLine2}}
+						</div>
+						<div ng-if="clickedOrg.address.city !== undefined && clickedOrg.address.city !== ''">
+							{{clickedOrg.address.city}}
+						</div>
+						<div ng-if="clickedOrg.address.postalCodeNumber !== undefined && clickedOrg.address.postalCodeNumber !== ''">
+							{{clickedOrg.address.postalCodeNumber}}
+						</div>
+						<div ng-if="clickedOrg.address.countryCode !== undefined && clickedOrg.address.countryCode !== ''">
+							{{clickedOrg.address.countryCode}}
+						</div>
+					</div>
+				</div>
+				<!--
+					<hr />
+					<div class="list">
+				 <div>Last Order : <b>{{clickedOrg.info.lastOrder}}</b></div>
+				 <div>Next Order : <b>{{clickedOrg.info.nextOrder}}</b></div>
+				 <div>Quality Audit Status : <b>{{clickedOrg.info.auditStatus}}</b> <em>(subscribe)</em></div>
+				 <div>YTD Order Volume : <b>{{clickedOrg.info.completedOrderVolume}}</b></div>
+				 <div>Pending Order Volume : <span class="badge badge-assertive badge-beat">{{clickedOrg.info.pendingOrderVolume}}</span></div>
+				 <div ng-if="clickedOrg.partyRoleCode === 'Seller'">Total Financing to Supplier : <b>{{clickedOrg.info.totalFinancing}}</b></div>
+				 <div>YTD Support Case Volume : <b>{{clickedOrg.info.completedSupportCases}}</b></div>
+				 <div>Pending Support Case Volume : <b>{{clickedOrg.info.pendingSupportCases}}</b></div>
+					</div>
+				 -->
+				<hr/>
+				<i class="ion-clock" style="font-size:25px;"><span
+						style="font-size:14px;vertical-align: middle;padding-left:10px;font-weight:400;color:#ffefa4;"> {{currentTime}}</span></i>
+
+				<div><span> Time Zone :<b> {{timezone.timeZoneName}} </b></span></div>
+
+
+				<hr/>
+				<i class="ion-ios-pricetags-outline" style="font-size:25px;"><span
+						style="font-size:14px;vertical-align: middle;padding-left:10px;"> Quality Audit Report</span></i>
+
+				<div><span ng-bind-html="auditCount"></span></div>
+				<hr/>
+				<div class="row" style="padding:0px!important;">
+					<div class="col-25">
+						<img src="{{icon}}">
+					</div>
+					<div class="col-75" style="font-size:14px;margin-top:15px;font-weight:400;">
+						<span style="color:#ffefa4;">{{weatherdescription}} {{temp}} &#176;C</span>
+					</div>
+				</div>
+
+				<!--<i class="ion-ios-partlysunny-outline" style="font-size:30px;">-->
+				<div style="padding-left:10px;">
+					<div>Max Temp : <span style="float:right;margin-right:50%;"><b>{{minTemp}} &#176;C</b></span>
+						<em></em></div>
+					<div>Min Temp : <span style="float:right;margin-right:50%;"><b>{{maxTemp}} &#176;C</b></span>
+						<em></em></div>
+					<div>Humidity : <span style="float:right;margin-right:50%;"><b>{{humid}} %</b></span> <em></em>
+					</div>
+					<div>Pressure : <span style="float:right;margin-right:50%;"><b>{{pressure}} hPa</b></span> <em></em>
+					</div>
+					<div>SCOUT &#x2122; Risk Status : <b>{{clickedOrg.info.riskStatus}}</b> <em>(subscribe)</em></div>
+				</div>
+
+				<!--
+				 <hr />
+					
+					<div class="list">
+				 <h5>YTD Transaction Summary</h5>
+				 <div style="margin:0 auto;text-align:center;max-width:parent;width:200px!important;"><canvas tc-chartjs-doughnut chart-data="clickedOrg.info.chartData" chart-options="chartOptions" width="auto" height="auto"></canvas></div>
+					</div>
+				 -->
+				<hr/>
+			</div>
+		</div>
+
+		
+		<div id="showError"><span class="errorDesc">{{displayError}}</span><span ng-modal="errorClose" ng-click="hideMessge()"><i class="ion-ios-close" id="errorExit"></i></span></div>
+   </ion-content>
+	  </ion-view>
+<script src="lib/google/move.js"></script>
+  </body>
+  
+
+</html>
