@@ -4,7 +4,7 @@
 
 See all members of a buyer community on a Google Map, i.e. supplier offices, buyer offices, factories, etc.
 
-If you'd like to know more info on Scout, Please visit [http://appxpresslabs.com/portfolio/cockpit/].
+If you'd like to know more info on Cockpit, Please visit [http://appxpresslabs.com/portfolio/cockpit/].
 
 #### Licence
 ---
